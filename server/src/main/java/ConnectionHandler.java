@@ -1,3 +1,5 @@
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
+
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.ServerSocket;
@@ -15,8 +17,6 @@ public class ConnectionHandler implements Runnable {
         os = new DataOutputStream(socket.getOutputStream());
         Thread.sleep(2000);
     }
-
-
 
     @Override
     public void run() {
@@ -39,7 +39,40 @@ public class ConnectionHandler implements Runnable {
                             fos.write(buffer, 0, bytesRead);
                         }
                     }
-                    os.writeUTF("OK");
+                    os.writeUTF("File upload on server. OK");
+                }else if(command.startsWith("./download")){
+                    String fileNameToDownload = command.split("\\s")[1];
+                    System.out.println("запрашиваемый файл "+fileNameToDownload);
+
+                    File fileToDownload = new File(Server.serverPath + "/" + fileNameToDownload);
+                    if (fileToDownload.exists()) {
+                        if (fileNameToDownload != null) {
+                            try {
+                                os.writeUTF("./download");
+                                os.writeUTF(fileNameToDownload);
+                                os.writeLong(fileToDownload.length());
+                                FileInputStream fis = new FileInputStream(fileToDownload);
+                                byte [] bufferDown = new byte[1024];
+                                while (fis.available() > 0) {
+                                    int bytesRead = fis.read(bufferDown);
+                                    os.write(bufferDown, 0, bytesRead);
+                                }
+                                os.flush();
+                                String response = is.readUTF();
+                                System.out.println(response);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }else {
+                        os.writeUTF(".err");
+                        os.writeUTF("no such file to download");
+                    }
+                }
+                else {
+
+                    System.out.println(command);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

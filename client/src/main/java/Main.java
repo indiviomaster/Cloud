@@ -25,6 +25,7 @@ public class Main extends Application {
                 e.printStackTrace();
             }
             Platform.exit();
+            System.exit(0);
         });
     }
 
