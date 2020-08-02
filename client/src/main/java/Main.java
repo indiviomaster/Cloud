@@ -9,6 +9,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 public class Main extends Application {
 
@@ -20,7 +22,14 @@ public class Main extends Application {
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
             try {
-                Controller.socket.getOutputStream().write("close".getBytes());
+                String msgClose = "close";
+                Controller.socketChannel.write(ByteBuffer.wrap(msgClose.getBytes()));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                Controller.socketChannel.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

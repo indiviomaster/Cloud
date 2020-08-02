@@ -10,8 +10,12 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,26 +31,44 @@ public class Controller implements Initializable {
     @FXML
     private List<File> clientFileList;
 
-    public static Socket socket;
-    private static DataInputStream is;
-    private static DataOutputStream os;
+    protected static SocketChannel socketChannel;
 
     public void sendCommand(ActionEvent actionEvent) {
-        try {
-            os.writeUTF(text.getText());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Отправлено:"+text.getText());
+
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: 7/21/2020 init connect to server
-        try{
-            socket = new Socket("localhost", 8189);
-            is = new DataInputStream(socket.getInputStream());
-            os = new DataOutputStream(socket.getOutputStream());
+        //try{
+            InetSocketAddress serverAddress = new InetSocketAddress("localhost", 8189);
+            try {
+                SocketChannel socketChannel = SocketChannel.open(serverAddress);
+
+                System.out.println("send file start");
+                try {
+
+                    RandomAccessFile raf = new RandomAccessFile("./client/src/main/resources/djud.jpg","rw");
+                    FileChannel fileChannel = raf.getChannel();
+                    ByteBuffer buffer = ByteBuffer.allocate(1024); // nio buffer
+                    int bytesRead = fileChannel.read(buffer); // count byte read to buffer
+                    while (bytesRead > -1) {
+                        buffer.flip(); //
+                        while (buffer.hasRemaining()) {
+
+                            socketChannel.write(buffer);
+                        }
+                        buffer.clear();
+                        bytesRead = fileChannel.read(buffer);
+                    }
+                    raf.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("send file complete");
+
+
+  /*
             Thread.sleep(1000);
             clientFileList = new ArrayList<>();
             String clientPath = "./client/src/main/resources/";
@@ -132,18 +154,18 @@ public class Controller implements Initializable {
             });
 
 
-
+*/
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private File findFileByName(String fileName) {
+ /*   private File findFileByName(String fileName) {
         for (File file : clientFileList) {
             if (file.getName().equals(fileName)){
                 return file;
             }
         }
         return null;
-    }
+    }*/
 }
