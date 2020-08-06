@@ -40,7 +40,8 @@ public class Controller implements Initializable {
             InetSocketAddress serverAddress = new InetSocketAddress("localhost", 8189);
             try {
                 SocketChannel socketChannel = SocketChannel.open(serverAddress);
-
+                refreshListView();
+/*
                 System.out.println("send file start");
                 try {
 
@@ -62,7 +63,7 @@ public class Controller implements Initializable {
                     e.printStackTrace();
                 }
                 System.out.println("send file complete");
-
+*/
 
 
         } catch (Exception e) {
@@ -70,7 +71,20 @@ public class Controller implements Initializable {
         }
     }
 
+    public void refreshListView(){
+        Platform.runLater(()->{
+            try {
+                listView.getItems().clear(); // очистка listView
+                Files.list(Paths.get(clientPath))
+                        .filter(path -> !Files.isDirectory(path))
+                        .map(path->path.getFileName().toString())
+                        .forEach(fname->listView.getItems().add(fname));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
+        });
+    }
 
 
 }
