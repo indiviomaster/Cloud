@@ -1,20 +1,20 @@
-import javafx.collections.ListChangeListener;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-
 import java.io.*;
-import java.net.Socket;
+import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -27,26 +27,44 @@ public class Controller implements Initializable {
     @FXML
     private List<File> clientFileList;
 
-    public static Socket socket;
-    private static DataInputStream is;
-    private static DataOutputStream os;
-
+    protected static SocketChannel socketChannel;
+    String clientPath = "./client/src/main/resources/";
     public void sendCommand(ActionEvent actionEvent) {
-        try {
-            os.writeUTF(text.getText());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Отправлено:"+text.getText());
+
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: 7/21/2020 init connect to server
-        try{
-            socket = new Socket("localhost", 8189);
-            is = new DataInputStream(socket.getInputStream());
-            os = new DataOutputStream(socket.getOutputStream());
+        //try{
+            InetSocketAddress serverAddress = new InetSocketAddress("localhost", 8189);
+            try {
+                SocketChannel socketChannel = SocketChannel.open(serverAddress);
+
+                System.out.println("send file start");
+                try {
+
+                    RandomAccessFile randomAccessFile = new RandomAccessFile(clientPath+"djud.jpg","rw");
+                    FileChannel fileChannel = randomAccessFile.getChannel();
+                    ByteBuffer buffer = ByteBuffer.allocate(1024); // nio buffer
+                    int bytesRead = fileChannel.read(buffer); // count byte read to buffer
+                    while (bytesRead > -1) {
+                        buffer.flip(); //
+                        while (buffer.hasRemaining()) {
+
+                            socketChannel.write(buffer);
+                        }
+                        buffer.clear();
+                        bytesRead = fileChannel.read(buffer);
+                    }
+                    randomAccessFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("send file complete");
+
+
+  /*
             Thread.sleep(1000);
             clientFileList = new ArrayList<>();
             String clientPath = "./client/src/main/resources/";
@@ -132,18 +150,33 @@ public class Controller implements Initializable {
             });
 
 
-
+*/
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private File findFileByName(String fileName) {
+ /*   private File findFileByName(String fileName) {
         for (File file : clientFileList) {
             if (file.getName().equals(fileName)){
                 return file;
             }
         }
         return null;
+    }*/
+    public void refreshListView(){
+        Platform.runLater(()->{
+            try {
+                listView.getItems().clear(); // очистка listView
+                Files.list(Paths.get(clientPath))
+                        .filter(path -> !Files.isDirectory(path))
+                        .map(path->path.getFileName().toString())
+                        .forEach(fname->listView.getItems().add(fname));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        });
     }
+
 }
