@@ -1,24 +1,20 @@
-import javafx.collections.ListChangeListener;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -32,7 +28,7 @@ public class Controller implements Initializable {
     private List<File> clientFileList;
 
     protected static SocketChannel socketChannel;
-
+    String clientPath = "./client/src/main/resources/";
     public void sendCommand(ActionEvent actionEvent) {
 
     }
@@ -48,8 +44,8 @@ public class Controller implements Initializable {
                 System.out.println("send file start");
                 try {
 
-                    RandomAccessFile raf = new RandomAccessFile("./client/src/main/resources/djud.jpg","rw");
-                    FileChannel fileChannel = raf.getChannel();
+                    RandomAccessFile randomAccessFile = new RandomAccessFile(clientPath+"djud.jpg","rw");
+                    FileChannel fileChannel = randomAccessFile.getChannel();
                     ByteBuffer buffer = ByteBuffer.allocate(1024); // nio buffer
                     int bytesRead = fileChannel.read(buffer); // count byte read to buffer
                     while (bytesRead > -1) {
@@ -61,7 +57,7 @@ public class Controller implements Initializable {
                         buffer.clear();
                         bytesRead = fileChannel.read(buffer);
                     }
-                    raf.close();
+                    randomAccessFile.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -168,4 +164,19 @@ public class Controller implements Initializable {
         }
         return null;
     }*/
+    public void refreshListView(){
+        Platform.runLater(()->{
+            try {
+                listView.getItems().clear(); // очистка listView
+                Files.list(Paths.get(clientPath))
+                        .filter(path -> !Files.isDirectory(path))
+                        .map(path->path.getFileName().toString())
+                        .forEach(fname->listView.getItems().add(fname));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        });
+    }
+
 }

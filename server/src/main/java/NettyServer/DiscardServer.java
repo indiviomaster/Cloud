@@ -17,21 +17,22 @@ public class DiscardServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
+            //настройки сервера
             ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+            b.group(bossGroup, workerGroup)                                     //указание пулов потоков
+                    .channel(NioServerSocketChannel.class)                      //канал нио сервер
                     .childHandler( new ChannelInitializer<SocketChannel>() {
                         @Override
-                        public void initChannel (SocketChannel ch) throws Exception {
+                        public void initChannel (SocketChannel ch) throws Exception {                //обработчик входящих подключений при каждом подключении
                             //Обрабатываем входящие данные
-                            ch.pipeline().addLast( new DiscardServerHandler());
+                            ch.pipeline().addLast( new DiscardServerHandler()); //в конец конвеера установить дискард
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128 )
                     .childOption(ChannelOption.SO_KEEPALIVE, true );
 
-            ChannelFuture f = b.bind(port).sync();
-            f.channel().closeFuture().sync();
+            ChannelFuture f = b.bind(port).sync(); //сервер слушает нужный порт и запускаем задачу
+            f.channel().closeFuture().sync();  //ждем пока канал не закроется по любой причине.
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
