@@ -26,9 +26,9 @@ public class Controller implements Initializable {
     @FXML
     public Button send;
     @FXML
-    public ListView<String> listView;
+    public ListView<String> listViewClient;
     @FXML
-    public ListView<String> listViewS;
+    public ListView<String> listViewServer;
     @FXML
     public TextField text;
     @FXML
@@ -53,7 +53,7 @@ public class Controller implements Initializable {
 
         sendMessage(new CommandMessage("/list"));
 
-        refreshListView();
+        refreshListViewClient();
 
         Thread readThread = new Thread(()->{
             try{
@@ -83,16 +83,16 @@ public class Controller implements Initializable {
 
                         if(commandMessage.getCommand().startsWith("/list")){
                             System.out.println("income list");
-                            String[] tokens = commandMessage.getCommand().split("\\s");
+                            String[] tokens = commandMessage.getCommand().split(";");
 
 
 
                             Platform.runLater(()->{
-                                listViewS.getItems().clear();
+                                listViewServer.getItems().clear();
                                 for ( String tok:tokens){
                                     if(!tok.equals("/list"))
                                     {
-                                        listViewS.getItems().add(tok);
+                                        listViewServer.getItems().add(tok);
                                     }
 
                                 }
@@ -101,7 +101,7 @@ public class Controller implements Initializable {
 
                         }
                     }
-                    refreshListView();
+                    refreshListViewClient();
                 }
             } catch (IOException ex){
                 ex.printStackTrace();
@@ -115,7 +115,7 @@ public class Controller implements Initializable {
     }
     public void pressOnUpdate(ActionEvent actionEvent){
         System.out.println("BtnUpdate copy from");
-        MultipleSelectionModel<String> listSelect = listViewS.getSelectionModel();
+        MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
         sendMessage(new FileRequest(file));
 
@@ -123,7 +123,7 @@ public class Controller implements Initializable {
 
     public void pressOnSend(ActionEvent actionEvent){
         System.out.println("BtnSend");
-        MultipleSelectionModel<String> listSelect = listView.getSelectionModel();
+        MultipleSelectionModel<String> listSelect = listViewClient.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
         Path path = Paths.get(clientPath+file);
         if (Files.exists(path)){
@@ -141,22 +141,35 @@ public class Controller implements Initializable {
 
     }
     public void pressOnDelete(ActionEvent actionEvent){
+
         System.out.println("BtnDelete");
-        MultipleSelectionModel<String> listSelect = listViewS.getSelectionModel();
+        MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
-        /*Path path = Paths.get(clientPath+file);
+        sendMessage(new CommandMessage("/delete;"+file));
+        System.out.println("Файл"+file+"удален на сервере");
+
+    }
+
+    public void pressOnClientDelete(ActionEvent actionEvent){
+
+        System.out.println("BtnDelete");
+        MultipleSelectionModel<String> listSelect = listViewClient.getSelectionModel();
+        String file = String.valueOf(listSelect.getSelectedItem());
+        Path path = Paths.get(clientPath+file);
+
         if (Files.exists(path)){
-        */
-            /*try {
+
+            try {
                 Files.delete(path);
             } catch (IOException e) {
                 e.printStackTrace();
-            }*/
-            sendMessage(new CommandMessage("/delete "+file));
-        //}
-        System.out.println("Файл"+file+"удален на сервере");
+            }
 
-        //refreshListView();
+        }
+
+        System.out.println("Файл"+file+"удален на клиенте");
+
+        refreshListViewClient();
     }
 
     public static int sendMessage(AbstractMessage message){
@@ -183,42 +196,43 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
 
-
         try {
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static AbstractMessage readMessage() throws IOException, ClassNotFoundException {
         return (AbstractMessage) inStream.readObject();
     }
-    // обновление списка файлов на сервере
-    public void refreshListViewS(){
-        Platform.runLater(()->{
-            try {
-                listViewS.getItems().clear();
-                Files.list(Paths.get(clientPath))
-                        .filter(path -> !Files.isDirectory(path))
-                        .map(file->file.getFileName().toString())
-                        .forEach(filename->listViewS.getItems().add(filename));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-        });
+    // обновление списка файлов на сервере
+    public void refreshListViewServer(){
+    sendMessage(new CommandMessage("/list"));
+//        Platform.runLater(()->{
+//            try {
+//                listViewServer.getItems().clear();
+//                Files.list(Paths.get(clientPath))
+//                        .filter(path -> !Files.isDirectory(path))
+//                        .map(file->file.getFileName().toString())
+//                        .forEach(filename->listViewServer.getItems().add(filename));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        });
     }
+
     // обновление списка файлов на клиенте
-    public void refreshListView(){
+    public void refreshListViewClient(){
         Platform.runLater(()->{
             try {
-                listView.getItems().clear();
+                listViewClient.getItems().clear();
                 Files.list(Paths.get(clientPath))
                         .filter(path -> !Files.isDirectory(path))
                         .map(file->file.getFileName().toString())
-                        .forEach(filename->listView.getItems().add(filename));
+                        .forEach(filename->listViewClient.getItems().add(filename));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -228,31 +242,5 @@ public class Controller implements Initializable {
 
     public void sendCommand(ActionEvent actionEvent) {
 
-
     }
 }
-/*
-                System.out.println("send file start");
-                try {
-
-                    RandomAccessFile randomAccessFile = new RandomAccessFile(clientPath+"djud.jpg","rw");
-                    FileChannel fileChannel = randomAccessFile.getChannel();
-                    ByteBuffer buffer = ByteBuffer.allocate(1024); // nio buffer
-                    int bytesRead = fileChannel.read(buffer); // count byte read to buffer
-                    while (bytesRead > -1) {
-                        buffer.flip(); //
-                        while (buffer.hasRemaining()) {
-
-                            socketChannel.write(buffer);
-                        }
-                        buffer.clear();
-                        bytesRead = fileChannel.read(buffer);
-                    }
-                    randomAccessFile.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("send file complete");
-*/
-
-

@@ -1,3 +1,4 @@
+import com.geekbrains.cloud.common.CommandMessage;
 import com.sun.org.slf4j.internal.Logger;
 import com.sun.org.slf4j.internal.LoggerFactory;
 import javafx.application.Application;
@@ -20,11 +21,8 @@ public class Main extends Application {
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
 
-                String msgClose = "close";
-
-                //послать сообщение о закрытии содинения
-                // закрыть соединение
-
+            Controller.sendMessage(new CommandMessage("/close"));
+            //Controller.close();
             Platform.exit();
             System.exit(0);
         });

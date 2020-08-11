@@ -38,8 +38,8 @@ public class SerialHandler extends ChannelInboundHandlerAdapter {
             Files.list(Paths.get(storagePath))
                     .filter(path -> !Files.isDirectory(path))
                     .map(file->file.getFileName().toString())
-                    .forEach(filename->stringBuilder.append(" "+filename));
-            System.out.println(String.valueOf(stringBuilder));
+                    .forEach(filename->stringBuilder.append(";"+filename));
+            //System.out.println(String.valueOf(stringBuilder));
             CommandMessage commandMessage  = new CommandMessage("/list"+String.valueOf(stringBuilder));
             ctx.writeAndFlush(commandMessage);
 
@@ -51,13 +51,13 @@ public class SerialHandler extends ChannelInboundHandlerAdapter {
             Files.list(Paths.get(storagePath))
                     .filter(path -> !Files.isDirectory(path))
                     .map(file->file.getFileName().toString())
-                    .forEach(filename->stringBuilder.append(" "+filename));
-            System.out.println(String.valueOf(stringBuilder));
+                    .forEach(filename->stringBuilder.append(";"+filename));
+            //System.out.println(String.valueOf(stringBuilder));
             CommandMessage commandMessage  = new CommandMessage("/list"+String.valueOf(stringBuilder));
             ctx.writeAndFlush(commandMessage);
             }else if(cmsg.startsWith("/delete")){
                 StringBuilder stringBuilder = new StringBuilder();
-                String[] tokens = cmsg.split("\\s");
+                String[] tokens = cmsg.split(";");
 
                 System.out.println("Пришло удалить файл "+tokens[1].toString());
                 Path p = Paths.get(storagePath+tokens[1].toString());
@@ -69,11 +69,13 @@ public class SerialHandler extends ChannelInboundHandlerAdapter {
                     Files.list(Paths.get(storagePath))
                             .filter(path -> !Files.isDirectory(path))
                             .map(file->file.getFileName().toString())
-                            .forEach(filename->stringBuilder.append(" "+filename));
+                            .forEach(filename->stringBuilder.append(";"+filename));
                     System.out.println(String.valueOf(stringBuilder));
                     CommandMessage commandMessage  = new CommandMessage("/list"+String.valueOf(stringBuilder));
                     ctx.writeAndFlush(commandMessage);
                 }
+            }else if(cmsg.startsWith("/close")){
+                ctx.close();
             }
 
         }

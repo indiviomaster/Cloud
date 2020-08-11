@@ -4,14 +4,18 @@
 <?import javafx.scene.layout.*?>
 
 <GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
-   <AnchorPane prefHeight="365.0" prefWidth="873.0">
+   <AnchorPane prefHeight="365.0" prefWidth="870.0">
 
-      <ListView fx:id="listView" layoutX="14.0" layoutY="14.0" prefHeight="298.0" prefWidth="414.0" />
-      <ListView fx:id="listViewS" layoutX="442.0" layoutY="14.0" prefHeight="298.0" prefWidth="414.0" />
-      <TextField fx:id="text" layoutX="14.0" layoutY="326.0" prefHeight="25.0" prefWidth="351.0" />
-      <Button fx:id="send" layoutX="377.0" layoutY="326.0" mnemonicParsing="false" onAction="#pressOnSend" text="SendFile" />
-      <Button fx:id="update" layoutX="450.0" layoutY="326.0" mnemonicParsing="false" onAction="#pressOnUpdate" text="CopyFrom" />
-      <Button fx:id="delete" layoutX="550.0" layoutY="326.0" mnemonicParsing="false" onAction="#pressOnDelete" text="Delete" />
+      <Label fx:id="LableClient" layoutX="15.0" layoutY="10.0" >Client Files</Label>
+      <Button fx:id="btnUpdateListOnClient" layoutX="230.0" layoutY="7.0" prefWidth="200" mnemonicParsing="false" onAction="#refreshListViewClient" text="Update File on Client" />
+      <Label fx:id="LableServer" layoutX="445.0" layoutY="10.0">Server Files</Label>
+      <Button fx:id="btnUpdateListOnServer" layoutX="655.0" layoutY="7.0" prefWidth="200" mnemonicParsing="false" onAction="#refreshListViewServer" text="Update File on Server" />
+      <ListView fx:id="listViewClient" layoutX="15.0" layoutY="35.0" prefHeight="280.0" prefWidth="415.0" />
+      <ListView fx:id="listViewServer" layoutX="440.0" layoutY="35" prefHeight="280.0" prefWidth="415.0" />
+      <Button fx:id="send" layoutX="15.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressOnSend" text="Send File to Server" />
+      <Button fx:id="deleteOnClient" layoutX="230.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressOnClientDelete" text="Delete From Client" />
+      <Button fx:id="update" layoutX="440.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressOnUpdate" text="Copy From server" />
+      <Button fx:id="delete" layoutX="655.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressOnDelete" text="Delete From Server" />
    </AnchorPane>
    <columnConstraints>
       <ColumnConstraints />
