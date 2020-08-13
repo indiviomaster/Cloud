@@ -12,10 +12,10 @@
       <Button fx:id="btnUpdateListOnServer" layoutX="655.0" layoutY="7.0" prefWidth="200" mnemonicParsing="false" onAction="#refreshListViewServer" text="Update File on Server" />
       <ListView fx:id="listViewClient" layoutX="15.0" layoutY="35.0" prefHeight="280.0" prefWidth="415.0" />
       <ListView fx:id="listViewServer" layoutX="440.0" layoutY="35" prefHeight="280.0" prefWidth="415.0" />
-      <Button fx:id="send" layoutX="15.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressOnSend" text="Send File to Server" />
-      <Button fx:id="deleteOnClient" layoutX="230.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressOnClientDelete" text="Delete From Client" />
-      <Button fx:id="update" layoutX="440.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressOnUpdate" text="Copy From server" />
-      <Button fx:id="delete" layoutX="655.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressOnDelete" text="Delete From Server" />
+      <Button fx:id="btnSendToServer" layoutX="15.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressOnSend" text="Send File to Server" />
+      <Button fx:id="btnDeleteFromClient" layoutX="230.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressDeleteOnClient" text="Delete From Client" />
+      <Button fx:id="btnCopyFromServer" layoutX="440.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressOnCopyFrom" text="Copy From server" />
+      <Button fx:id="btnDeleteFromServer" layoutX="655.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressDeleteOnServer" text="Delete from Server" />
    </AnchorPane>
    <columnConstraints>
       <ColumnConstraints />

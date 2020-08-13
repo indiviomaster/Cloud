@@ -9,7 +9,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
@@ -21,24 +22,31 @@ import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
-    //private static final Logger logger = LoggerFactory.getLogger(Controller.class);
+    private static final Logger LOGGER = LogManager.getLogger(Controller.class);
 
     @FXML
-    public Button send;
+    public Button btnUpdateListOnClient;
+    @FXML
+    public Button btnUpdateListOnServer;
+    @FXML
+    public Button btnDeleteFromClient;
+    @FXML
+    public Button btnSendToServer;
+    @FXML
+    public Button btnCopyFromServer;
+    @FXML
+    public Button btnDeleteFromServer;
     @FXML
     public ListView<String> listViewClient;
     @FXML
     public ListView<String> listViewServer;
-    @FXML
-    public TextField text;
-    @FXML
-    private List<File> clientFileList;
 
+    private List<File> clientFileList;
     private static Socket socket;
     private static ObjectEncoderOutputStream outStream;
     private static ObjectDecoderInputStream inStream;
 
-    String clientPath = "./client/src/main/resources/";
+    String clientPath = "./ClientFiles/";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,8 +55,9 @@ public class Controller implements Initializable {
             socket = new Socket("localhost", 8189);
             outStream = new ObjectEncoderOutputStream(socket.getOutputStream());
             inStream = new ObjectDecoderInputStream(socket.getInputStream());
+            LOGGER.info("Соединение установлено");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Ошибка соединения ", e);
         }
 
         sendMessage(new CommandMessage("/list"));
@@ -61,8 +70,9 @@ public class Controller implements Initializable {
                     AbstractMessage incomeMessage = null;
                     try {
                         incomeMessage = readMessage();
+                        LOGGER.debug("Пришло входящее сообщение");
                     } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        LOGGER.error("Прислан неправильный тип данных", e);
                     }
                     if(incomeMessage instanceof FileMessage){
                         FileMessage fileMessage = (FileMessage) incomeMessage;
@@ -72,21 +82,19 @@ public class Controller implements Initializable {
                                 fileOutputStream.write(fileMessage.getData());
                                 fileOutputStream.close();
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                LOGGER.error("Ошибка ввода вывода", e);
                             }
-                        System.out.println("файл" +fileMessage.getFilename()+"записан");
-                        //файл записан
-                        //logger
+                        LOGGER.info("Файл " +fileMessage.getFilename()+" записан на клиенте");
+
+
+
                     }else if(incomeMessage instanceof CommandMessage){
                         CommandMessage commandMessage = (CommandMessage) incomeMessage;
                         //Обновляем список файлов
 
                         if(commandMessage.getCommand().startsWith("/list")){
-                            System.out.println("income list");
+                            LOGGER.info("Пришел запрос списка файлов");
                             String[] tokens = commandMessage.getCommand().split(";");
-
-
-
                             Platform.runLater(()->{
                                 listViewServer.getItems().clear();
                                 for ( String tok:tokens){
@@ -94,17 +102,14 @@ public class Controller implements Initializable {
                                     {
                                         listViewServer.getItems().add(tok);
                                     }
-
                                 }
-
                             });
-
                         }
                     }
                     refreshListViewClient();
                 }
-            } catch (IOException ex){
-                ex.printStackTrace();
+            } catch (IOException e){
+                LOGGER.error("Ошибка ввода вывода", e);
             }
             finally {
                 close();
@@ -113,61 +118,73 @@ public class Controller implements Initializable {
         readThread.setDaemon(true);
         readThread.start();
     }
-    public void pressOnUpdate(ActionEvent actionEvent){
-        System.out.println("BtnUpdate copy from");
+
+    public void pressOnCopyFrom(ActionEvent actionEvent){
+
         MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
-        sendMessage(new FileRequest(file));
-
+        if(!file.equals("null")){
+            sendMessage(new FileRequest(file));
+            LOGGER.info("Нажата кнопка CopyFromServer, скопирован файл = "+file);
+        }
     }
 
     public void pressOnSend(ActionEvent actionEvent){
-        System.out.println("BtnSend");
+
         MultipleSelectionModel<String> listSelect = listViewClient.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
-        Path path = Paths.get(clientPath+file);
-        if (Files.exists(path)){
-            try {
-            FileMessage outFileMessage = new FileMessage(path);
-            sendMessage(outFileMessage);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+        if(!file.equals("null")){
+
+
+            Path path = Paths.get(clientPath+file);
+            if (Files.exists(path)){
+                try {
+                    FileMessage outFileMessage = new FileMessage(path);
+                    sendMessage(outFileMessage);
+                    LOGGER.info("Нажата кнопка BtnSend, отправлен файл = "+file);
+                } catch (FileNotFoundException e) {
+                    LOGGER.error("Файл не найден", e);
+                } catch (IOException e) {
+                    LOGGER.error("Ошибка ввода вывода", e);
+                }
+
             }
-
         }
-
-
     }
-    public void pressOnDelete(ActionEvent actionEvent){
+    public void pressDeleteOnServer(ActionEvent actionEvent){
 
-        System.out.println("BtnDelete");
         MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
-        sendMessage(new CommandMessage("/delete;"+file));
-        System.out.println("Файл"+file+"удален на сервере");
+        if(!file.equals("null")) {
+            sendMessage(new CommandMessage("/delete;" + file));
+            LOGGER.info("Нажата кнопка BtnDelete, на сервере удален файл = "+file);
+        }else {
+            LOGGER.info("В окне сервера не выбран файл");
+        }
 
     }
 
-    public void pressOnClientDelete(ActionEvent actionEvent){
+    public void pressDeleteOnClient(ActionEvent actionEvent){
 
-        System.out.println("BtnDelete");
+
         MultipleSelectionModel<String> listSelect = listViewClient.getSelectionModel();
         String file = String.valueOf(listSelect.getSelectedItem());
-        Path path = Paths.get(clientPath+file);
+        if(!file.equals("null")) {
 
-        if (Files.exists(path)){
+            Path path = Paths.get(clientPath + file);
 
-            try {
-                Files.delete(path);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (Files.exists(path)) {
+
+                try {
+                    Files.delete(path);
+                    LOGGER.info("Нажата кнопка Delete From Client, на клиенте удален файл = "+file);
+                } catch (IOException e) {
+                    LOGGER.error("Ошибка ввода вывода", e);
+                }
             }
-
+        }else {
+            LOGGER.info("В окне клиента не выбран файл");
         }
-
-        System.out.println("Файл"+file+"удален на клиенте");
 
         refreshListViewClient();
     }
@@ -175,10 +192,11 @@ public class Controller implements Initializable {
     public static int sendMessage(AbstractMessage message){
         try {
             outStream.writeObject(message);
+            LOGGER.info("Сообщение отправлено");
             return 1;
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Ошибка ввода вывода", e);
         }
         return 0;
     }
@@ -186,20 +204,23 @@ public class Controller implements Initializable {
     public static void close() {
         try {
             inStream.close();
+            LOGGER.info("Закрыт поток in");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Ошибка закрытия потока in", e);
         }
 
         try {
             outStream.close();
+            LOGGER.info("Закрыт поток out");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Ошибка закрытия потока out", e);
         }
 
         try {
             socket.close();
+            LOGGER.info("Закрыто соединение");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Ошибка закрытия соединения", e);
         }
     }
 
@@ -209,19 +230,9 @@ public class Controller implements Initializable {
 
     // обновление списка файлов на сервере
     public void refreshListViewServer(){
-    sendMessage(new CommandMessage("/list"));
-//        Platform.runLater(()->{
-//            try {
-//                listViewServer.getItems().clear();
-//                Files.list(Paths.get(clientPath))
-//                        .filter(path -> !Files.isDirectory(path))
-//                        .map(file->file.getFileName().toString())
-//                        .forEach(filename->listViewServer.getItems().add(filename));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//        });
+        sendMessage(new CommandMessage("/list"));
+        LOGGER.info("Запрос обновления списка файлов на сервере");
+
     }
 
     // обновление списка файлов на клиенте
@@ -233,14 +244,11 @@ public class Controller implements Initializable {
                         .filter(path -> !Files.isDirectory(path))
                         .map(file->file.getFileName().toString())
                         .forEach(filename->listViewClient.getItems().add(filename));
+                LOGGER.info("Запрос обновления списка файлов на клиенте");
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Ошибка ввода вывода", e);
             }
 
         });
-    }
-
-    public void sendCommand(ActionEvent actionEvent) {
-
     }
 }

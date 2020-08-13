@@ -10,8 +10,11 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class NettyServer {
+    private static final Logger LOGGER = LogManager.getLogger(NettyServer.class);
 
     public NettyServer() {
         EventLoopGroup auth = new NioEventLoopGroup(1);

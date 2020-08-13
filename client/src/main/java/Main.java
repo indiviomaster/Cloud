@@ -1,17 +1,16 @@
 import com.geekbrains.cloud.common.CommandMessage;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Main extends Application {
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -22,6 +21,7 @@ public class Main extends Application {
         primaryStage.setOnCloseRequest(event -> {
 
             Controller.sendMessage(new CommandMessage("/close"));
+            LOGGER.info("Отправлено сообщение о закрытии приложения");
             //Controller.close();
             Platform.exit();
             System.exit(0);
