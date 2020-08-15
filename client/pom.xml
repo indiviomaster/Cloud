@@ -11,11 +11,7 @@
 
     <artifactId>client</artifactId>
     <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-        </dependency>
+
         <dependency>
             <groupId>com.geekbrains</groupId>
             <artifactId>common</artifactId>
