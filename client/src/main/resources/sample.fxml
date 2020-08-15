@@ -3,24 +3,36 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
-   <AnchorPane prefHeight="365.0" prefWidth="870.0">
 
-      <Label fx:id="LableClient" layoutX="15.0" layoutY="10.0" >Client Files</Label>
-      <Button fx:id="btnUpdateListOnClient" layoutX="230.0" layoutY="7.0" prefWidth="200" mnemonicParsing="false" onAction="#refreshListViewClient" text="Update File on Client" />
-      <Label fx:id="LableServer" layoutX="445.0" layoutY="10.0">Server Files</Label>
-      <Button fx:id="btnUpdateListOnServer" layoutX="655.0" layoutY="7.0" prefWidth="200" mnemonicParsing="false" onAction="#refreshListViewServer" text="Update File on Server" />
-      <ListView fx:id="listViewClient" layoutX="15.0" layoutY="35.0" prefHeight="280.0" prefWidth="415.0" />
-      <ListView fx:id="listViewServer" layoutX="440.0" layoutY="35" prefHeight="280.0" prefWidth="415.0" />
-      <Button fx:id="btnSendToServer" layoutX="15.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressOnSend" text="Send File to Server" />
-      <Button fx:id="btnDeleteFromClient" layoutX="230.0" layoutY="326.0" prefWidth="200" mnemonicParsing="false" onAction="#pressDeleteOnClient" text="Delete From Client" />
-      <Button fx:id="btnCopyFromServer" layoutX="440.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressOnCopyFrom" text="Copy From server" />
-      <Button fx:id="btnDeleteFromServer" layoutX="655.0" layoutY="326.0" prefWidth="200"  mnemonicParsing="false" onAction="#pressDeleteOnServer" text="Delete from Server" />
-   </AnchorPane>
-   <columnConstraints>
-      <ColumnConstraints />
-   </columnConstraints>
-   <rowConstraints>
-      <RowConstraints />
-   </rowConstraints>
-</GridPane>
+<VBox prefHeight="365" prefWidth="1000" xmlns:fx="http://javafx.com/fxml" fx:controller="Controller" alignment="center">
+   <HBox fx:id="authPanel" >
+      <TextField HBox.hgrow="ALWAYS" fx:id="loginField" promptText="Логин"/>
+      <PasswordField HBox.hgrow="ALWAYS" fx:id="passField" promptText="Пароль" />
+      <Button HBox.hgrow="ALWAYS" fx:id="btnSendAuth" text="Подключиться" onAction="#sendAuth" />
+   </HBox>
+
+   <HBox   fx:id = "filePanel" VBox.vgrow="ALWAYS">
+      <VBox HBox.hgrow="ALWAYS">
+         <Label fx:id="lblClient" >Файлы на клиенте</Label>
+         <ListView VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" fx:id="listViewClient"/>
+         <HBox alignment="BASELINE_CENTER" spacing="20">
+            <Button HBox.hgrow="ALWAYS" fx:id="btnSendToServer"  mnemonicParsing="false" onAction="#pressOnSend" text="Отправить на сервер" />
+            <Button HBox.hgrow="ALWAYS" fx:id="btnDeleteFromClient"  mnemonicParsing="false" onAction="#pressDeleteOnClient" text="Удалить с клиента" />
+            <Button HBox.hgrow="ALWAYS" fx:id="btnUpdateListOnClient"  mnemonicParsing="false" onAction="#refreshListViewClient" text="Обновить список клиента" />
+         </HBox>
+      </VBox>
+      <VBox HBox.hgrow="ALWAYS">
+         <Label fx:id="lblServer">Файлы на сервере</Label>
+         <ListView VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" fx:id="listViewServer" />
+         <HBox alignment="BASELINE_CENTER" spacing="20">
+            <Button HBox.hgrow="ALWAYS" fx:id="btnCopyFromServer" mnemonicParsing="false" onAction="#pressOnCopyFrom" text="Скопировать с сервера" />
+            <Button HBox.hgrow="ALWAYS" fx:id="btnDeleteFromServer"  mnemonicParsing="false" onAction="#pressDeleteOnServer" text="Удалить с сервера" />
+            <Button HBox.hgrow="ALWAYS" fx:id="btnUpdateListOnServer" mnemonicParsing="false" onAction="#refreshListViewServer" text="Обновить список сервера" />
+         </HBox>
+      </VBox>
+   </HBox>
+</VBox>
+
+
+
+

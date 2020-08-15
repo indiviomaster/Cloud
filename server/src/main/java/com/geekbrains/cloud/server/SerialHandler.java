@@ -17,20 +17,21 @@ import java.nio.file.Paths;
 
 public class SerialHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOGGER = LogManager.getLogger(SerialHandler.class);
+    private static String authUser="";
     String storagePath = "./ServerFiles/";
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         if (msg instanceof FileRequest) {
             FileRequest fileRequest = (FileRequest) msg;
-            if (Files.exists(Paths.get(storagePath + fileRequest.getFilename()))) {
-                FileMessage fileMessage = new FileMessage(Paths.get(storagePath + fileRequest.getFilename()));
+            if (Files.exists(Paths.get(storagePath+authUser+"/" + fileRequest.getFilename()))) {
+                FileMessage fileMessage = new FileMessage(Paths.get(storagePath +authUser+"/" + fileRequest.getFilename()));
                 LOGGER.info("Пришел запрос на файл "+fileRequest.getFilename());
                 ctx.writeAndFlush(fileMessage);
             }
         }else if (msg instanceof FileMessage) {
             FileMessage fmsg = (FileMessage)msg;
-            Path pin = Paths.get(storagePath+fmsg.getFilename());
+            Path pin = Paths.get(storagePath+authUser+"/"+fmsg.getFilename());
             if(!Files.exists(pin))
                 Files.createFile(pin);
             File fout = new File(String.valueOf(pin));
@@ -40,7 +41,7 @@ public class SerialHandler extends ChannelInboundHandlerAdapter {
             LOGGER.info("Пришел файл "+fmsg.getFilename());
 
             StringBuilder stringBuilder = new StringBuilder();
-            Files.list(Paths.get(storagePath))
+            Files.list(Paths.get(storagePath+authUser+"/"))
                     .filter(path -> !Files.isDirectory(path))
                     .map(file->file.getFileName().toString())
                     .forEach(filename->stringBuilder.append(";"+filename));
@@ -53,7 +54,11 @@ public class SerialHandler extends ChannelInboundHandlerAdapter {
                 LOGGER.info("Пришел запрос списка файлов");
 
                 StringBuilder stringBuilder = new StringBuilder();
-                Files.list(Paths.get(storagePath))
+                if(Files.notExists(Paths.get(storagePath+authUser+"/"))){
+                    Files.createDirectory(Paths.get(storagePath+authUser+"/"));
+                }
+                System.out.println(storagePath+authUser+"/");
+                Files.list(Paths.get(storagePath+authUser+"/"))
                     .filter(path -> !Files.isDirectory(path))
                     .map(file->file.getFileName().toString())
                     .forEach(filename->stringBuilder.append(";"+filename));
@@ -65,22 +70,32 @@ public class SerialHandler extends ChannelInboundHandlerAdapter {
 
                 LOGGER.info("Пришел запрос удалить файл = "+tokens[1]);
 
-                Path p = Paths.get(storagePath+tokens[1]);
+                Path p = Paths.get(storagePath+authUser+"/"+tokens[1]);
                 System.out.println(p);
                 if(Files.exists(p)){
 
-                    Files.delete(Paths.get(storagePath+tokens[1]));
+                    Files.delete(Paths.get(storagePath+authUser+"/"+tokens[1]));
                     LOGGER.info("Файл "+tokens[1]+" удален");
 
-                    Files.list(Paths.get(storagePath))
+                    Files.list(Paths.get(storagePath+authUser+"/"))
                             .filter(path -> !Files.isDirectory(path))
                             .map(file->file.getFileName().toString())
                             .forEach(filename->stringBuilder.append(";"+filename));
                     CommandMessage commandMessage  = new CommandMessage("/list"+stringBuilder);
                     ctx.writeAndFlush(commandMessage);
                 }
+            }else if(cmsg.startsWith("/authuser")){
+                String[] tokens = cmsg.split(";");
+
+
+                //добавить работу с БД
+                authUser = tokens[1];
+                ctx.writeAndFlush(new CommandMessage("/userok"+";"+authUser));
+                LOGGER.info("Клиент "+tokens[1]+" авторизован");
+
             }else if(cmsg.startsWith("/close")){
                 ctx.close();
+                LOGGER.info("Клиент отключился");
             }
 
         }

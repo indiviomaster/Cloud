@@ -17,13 +17,14 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Cloud Client");
         primaryStage.setScene(new Scene(root));
+
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
 
             Controller.sendMessage(new CommandMessage("/close"));
             LOGGER.info("Отправлено сообщение о закрытии приложения");
-            //Controller.close();
             Platform.exit();
+            Controller.close();
             System.exit(0);
         });
     }
