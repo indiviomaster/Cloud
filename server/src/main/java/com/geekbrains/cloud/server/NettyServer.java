@@ -24,10 +24,10 @@ public class NettyServer {
 
 
     public NettyServer() {
-        String url = "jdbc:mysql://localhost:3306/cloud_db?serverTimezone=UTC";
+        /*String url = "jdbc:mysql://localhost:3306/cloud_db?serverTimezone=UTC";
         String username = "root";
         String password = "123456";
-        System.out.println("Connecting...");
+        LOGGER.info("Подключение...");
 
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             System.out.println("Connection successful!");
@@ -35,31 +35,16 @@ public class NettyServer {
             statement = connection.createStatement();
             LOGGER.info("Сервис аутентификации запущен");
 
-
-            /* CREATE DATABASE  IF NOT EXISTS `cloud_db`;
-               USE `cloud_db`;
-               DROP TABLE `user`;
-               CREATE TABLE `user` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL,   `pass` VARCHAR(45) NULL, PRIMARY KEY (`id`));
-               INSERT INTO `user` (`name`, `pass`) VALUES ('user1', 'pass');
-               INSERT INTO `user` (`name`, `pass`) VALUES ('user2', 'pass');
-               INSERT INTO `user` (`name`, `pass`) VALUES ('user3', 'pass');*/
-
             ResultSet resultSet = statement.executeQuery("SELECT id, name, pass FROM user;");
             try {
                 while (resultSet.next()) {
                     LOGGER.debug("пользователь id = "+resultSet.getInt("id")+" name = "+resultSet.getString("name")+" pass = "+resultSet.getString("pass"));
                     UserEntry user = new UserEntry(resultSet.getInt("id"),resultSet.getString("name"),resultSet.getString("pass"));
-                    System.out.println(user.getName().toString());
                     LOGGER.debug("пользователь {} добавлен в список зарегистрированных",resultSet.getString("name"));
                 }
-            } catch (SQLException e) {
-                LOGGER.error("Проблема с SQL",e);
-            }
-
-        } catch (SQLException e) {
-
-            LOGGER.error("Сбой подключения",e);
-        }
+            } catch (SQLException e) {LOGGER.error("Проблема с SQL",e);}
+        } catch (SQLException e) {LOGGER.error("Сбой подключения",e);}
+        */
 
 
         EventLoopGroup auth = new NioEventLoopGroup(1);
