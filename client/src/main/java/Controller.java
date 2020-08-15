@@ -69,8 +69,6 @@ public class Controller implements Initializable {
             LOGGER.error("Ошибка соединения ", e);
         }
 
-        //
-
         refreshListViewClient();
 
         Thread readThread = new Thread(()->{
@@ -151,46 +149,49 @@ public class Controller implements Initializable {
     }
 
     public void pressOnCopyFrom(){
-
-        MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
-        String file = String.valueOf(listSelect.getSelectedItem());
-        if(!file.equals("null")){
-            sendMessage(new FileRequest(file));
-            LOGGER.info("Нажата кнопка CopyFromServer, скопирован файл = "+file);
+        if(auth) {
+            MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
+            String file = String.valueOf(listSelect.getSelectedItem());
+            if (!file.equals("null")) {
+                sendMessage(new FileRequest(file));
+                LOGGER.info("Нажата кнопка CopyFromServer, скопирован файл = " + file);
+            }
         }
     }
 
     public void pressOnSend(){
+        if(auth){
+            MultipleSelectionModel<String> listSelect = listViewClient.getSelectionModel();
+            String file = String.valueOf(listSelect.getSelectedItem());
+            if(!file.equals("null")){
 
-        MultipleSelectionModel<String> listSelect = listViewClient.getSelectionModel();
-        String file = String.valueOf(listSelect.getSelectedItem());
-        if(!file.equals("null")){
 
+                Path path = Paths.get(clientPath+file);
+                if (Files.exists(path)){
+                    try {
+                        FileMessage outFileMessage = new FileMessage(path);
+                        sendMessage(outFileMessage);
+                        LOGGER.info("Нажата кнопка BtnSend, на сервер отправлен файл = "+file);
+                    } catch (FileNotFoundException e) {
+                        LOGGER.error("Файл не найден", e);
+                    } catch (IOException e) {
+                        LOGGER.error("Ошибка ввода вывода", e);
+                    }
 
-            Path path = Paths.get(clientPath+file);
-            if (Files.exists(path)){
-                try {
-                    FileMessage outFileMessage = new FileMessage(path);
-                    sendMessage(outFileMessage);
-                    LOGGER.info("Нажата кнопка BtnSend, отправлен файл = "+file);
-                } catch (FileNotFoundException e) {
-                    LOGGER.error("Файл не найден", e);
-                } catch (IOException e) {
-                    LOGGER.error("Ошибка ввода вывода", e);
                 }
-
             }
         }
     }
     public void pressDeleteOnServer(){
-
-        MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
-        String file = String.valueOf(listSelect.getSelectedItem());
-        if(!file.equals("null")) {
-            sendMessage(new CommandMessage("/delete;" + file));
-            LOGGER.info("Нажата кнопка BtnDelete, на сервере удален файл = "+file);
-        }else {
-            LOGGER.info("В окне сервера не выбран файл");
+        if(auth){
+            MultipleSelectionModel<String> listSelect = listViewServer.getSelectionModel();
+            String file = String.valueOf(listSelect.getSelectedItem());
+            if(!file.equals("null")) {
+                sendMessage(new CommandMessage("/delete;" + file));
+                LOGGER.info("Нажата кнопка BtnDelete, на сервере удален файл = "+file);
+            }else {
+                LOGGER.info("В окне сервера не выбран файл");
+            }
         }
 
     }
